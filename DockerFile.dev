@@ -1,0 +1,25 @@
+# Build State
+FROM node:20 as build
+
+WORKDIR /usr/src/nestjs-deploy-study
+
+COPY package*.json .
+
+RUN npm install
+
+COPY . .
+
+RUN npm run build
+
+# Production State
+FROM node:20 as production
+
+WORKDIR /usr/src/nestjs-deploy-study
+
+COPY --from=build ./usr/src/nestjs-deploy-study/dist ./dist
+COPY --from=build ./usr/src/nestjs-deploy-study/package.json ./package.json
+COPY --from=build ./usr/src/nestjs-deploy-study/package-lock.json ./package-lock.json
+
+RUN npm install --only=production
+
+CMD [ "node", "dist/main.js" ]
